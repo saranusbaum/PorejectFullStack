@@ -1,0 +1,153 @@
+  .page-container {
+    /* display: flex; */
+    flex-wrap: wrap;
+    gap: 20px;
+    font-family: Arial, sans-serif;
+  }
+
+  .nutrition-section, .form-section {
+    flex: 1;
+    min-width: 350px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 20px;
+    background-color: #fdfdfd;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+
+  h3, h4 {
+    color: #2c3e50;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+  }
+
+  table th, table td {
+    padding: 10px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+
+  form label {
+    display: block;
+    margin-bottom: 10px;
+  }
+
+  form input, form select {
+    padding: 5px;
+    width: 100%;
+    margin-top: 3px;
+    box-sizing: border-box;
+  }
+
+  .chat-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    font-size: 16px;
+    margin-top: 30px;
+    transition: background-color 0.3s;
+  }
+
+  .chat-toggle:hover {
+    background-color: #27ae60;
+  }
+
+  .chat-toggle img {
+    width: 24px;
+    height: 24px;
+  }
+
+  .chat-box {
+    margin-top: 20px;
+    border: 2px solid #2ecc71;
+    padding: 15px;
+    border-radius: 12px;
+    background-color: #e8fdf1;
+  }
+
+  .dots-loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 40px;
+  gap: 6px;
+}
+
+.dots-loader span {
+  width: 8px;
+  height: 8px;
+  background-color: #333;
+  border-radius: 50%;
+  animation: blink 1.4s infinite both;
+}
+
+.dots-loader span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dots-loader span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%, 80%, 100% {
+    opacity: 0.2;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+.status-buttons {
+  display: flex;
+  gap: 4px;
+}
+
+.status-buttons button {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: 0.3s;
+  font-weight: bold;
+}
+
+.status-buttons button.active {
+  opacity: 1;
+  box-shadow: 0 0 5px #999;
+}
+
+.notStarted {
+  background-color: lightgray;
+  color: black;
+}
+
+.inProgress {
+  background-color: #ffd966;
+  color: black;
+}
+
+.completed {
+  background-color: #8fd17d;
+  color: black;
+}
+
+.save-button {
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #007bff;
+  color: white;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+}

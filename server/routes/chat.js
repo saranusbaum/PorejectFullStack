@@ -1,0 +1,282 @@
+const express = require('express');
+const router = express.Router();
+const { OpenAI } = require('openai');
+const ChatMessage = require('../models/ChatMessage');
+const HealthDataUser = require('../models/HealthDataUser');
+const jwt = require('jsonwebtoken');
+const { debug } = require('openai/core.mjs');
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+router.get('/initial', authenticate, async (req, res) => {
+  try {
+    const healthData = await HealthDataUser.findOne({ userId: req.user.userId });
+
+    if (!healthData) {
+      return res.status(404).json({ message: 'לא נמצאו נתוני בריאות למשתמש זה' });
+    }
+ //console.log("healthData" ,healthData)
+  //  console.log("healthData.initialNutritionGoals.length" ,healthData.nutritionGoals.length)
+    // ✅ אם כבר קיימות מטרות – מחזיר אותן בלי לשלוח שוב ל-GPT
+    if (healthData.nutritionGoals && healthData.nutritionGoals.length > 0) {
+    //  console.log("yessssssss")
+      return res.json({ nutritionGoals: healthData.nutritionGoals, healthData });
+
+    }
+
+    // המשך לקרוא ל-GPT אם אין מטרות שמורות
+    const prompt = `
+אתה תזונאי מומחה. אנא ספק 6 מטרות תזונתיות חייב שזה יהיה בנושא תזונה בריאה כושר וכד בשפה העברית מותאמות אישית עבור משתמש עם הנתונים הבאים:
+משקל: ${healthData.weight} ק"ג,
+גובה: ${healthData.height} ס"מ,
+גיל: ${healthData.age} שנים,
+מין: ${healthData.gender},
+אלרגיות: ${healthData.allergies.join(', ')}.
+
+אנא הצג את המטרות בפורמט JSON בלבד, במערך של אובייקטים, כאשר כל אובייקט כולל את המאפיינים:
+"title", "description", "targetCalories", "targetCarbs", "targetProtein", "targetFat".
+`;
+
+    const completion = await openai.chat.completions.create({
+      model: "gpt-3.5-turbo",
+      messages: [{ role: "user", content: prompt }],
+    });
+
+    const responseText = completion.choices[0].message.content;
+
+    let nutritionGoals;
+    try {
+    
+
+      nutritionGoals = JSON.parse(responseText);
+
+  
+    } catch (e) {
+      return res.status(500).json({ error: 'שגיאה בפרסינג JSON מה-OpenAI' });
+    }
+
+    // console.log("nutritionGoals" ,nutritionGoals)
+   nutritionGoals = nutritionGoals.map(goal => ({
+  ...goal,
+  status: 'notStarted' }));
+
+    console.log("nutritionGoals" ,nutritionGoals)
+    healthData.nutritionGoals = nutritionGoals;
+       
+
+    await healthData.save();
+
+    res.json({ nutritionGoals, healthData });
+  } catch (error) {
+    res.status(500).json(error);
+  }
+});
+
+router.post('/updateNutritionGoals', authenticate, async (req, res) => {
+  try {
+  
+    const healthData = await HealthDataUser.findOne({ userId: req.user.userId });
+
+    if (!healthData) {
+      return res.status(404).json({ message: 'לא נמצאו נתוני בריאות למשתמש זה' });
+    }
+   console.log( req.body )
+    healthData.nutritionGoals = req.body;
+ 
+    await healthData.save();
+
+    res.json({ message: 'עודכן בהצלחה' });
+  } catch (err) {
+    res.status(500).json({ message: 'שגיאה בעדכון המטרות', error: err });
+  }
+});
+
+
+
+// router.get('/initial',authenticate , async (req, res) => {
+//   try {
+//     // דוגמה לנתוני בריאות שהמשתמש מספק
+//    // const healthData = { weight: 70, height: 175, age: 30, gender: 'male', allergies: ['nuts'] };
+
+//      const healthData = await HealthDataUser.findOne({ userId: req.user.userId });
+//     if (!healthData) {
+//       return res.status(404).json({ message: 'לא נמצאו נתוני בריאות למשתמש זה' });
+//     }
+
+//     // if(healthData.nutritionGoals.length>=1)
+//     // {
+//     //   let a = healthData.nutritionGoals
+//     //  console.log("healthData" ,a)
+//     //  console.log("healthDatahealthData" ,healthData)
+//     //   res.json({ a, healthData });
+//     // }
+//    // else
+//     // בניית פרומפט חכם
+// const prompt = `
+// אתה תזונאי מומחה. אנא ספק 6 מטרות תזונתיות מותאמות אישית עבור משתמש עם הנתונים הבאים:
+// משקל: ${healthData.weight} ק"ג,
+// גובה: ${healthData.height} ס"מ,
+// גיל: ${healthData.age} שנים,
+// מין: ${healthData.gender},
+// אלרגיות: ${healthData.allergies.join(', ')}.
+
+// אנא הצג את המטרות בפורמט JSON בלבד, במערך של אובייקטים, כאשר כל אובייקט כולל את המאפיינים:
+// "title" (מחרוזת), "description" (מחרוזת), "targetCalories" (מספר), "targetCarbs" (מספר), "targetProtein" (מספר), "targetFat" (מספר).
+
+// לדוגמה:
+
+// [
+//   {
+//     "title": "איזון קלורי",
+//     "description": "מטרת איזון קלורי",
+//     "targetCalories": 2000,
+//     "targetCarbs": 250,
+//     "targetProtein": 150,
+//     "targetFat": 70
+//   },
+//   {
+//     "title": "הפחתת שומן",
+//     "description": "מטרת הפחתת שומן",
+//     "targetCalories": 1800,
+//     "targetCarbs": 200,
+//     "targetProtein": 160,
+//     "targetFat": 50
+//   }
+// ]
+// `;
+
+
+//     // קריאה ל-OpenAI עם הפרומפט החכם
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-3.5-turbo",
+//       messages: [{ role: "user", content: prompt }],
+//     });
+
+//     // הפוך את התגובה לאובייקט JSON (תלוי איך ה-GPT מחזיר)
+//     const responseText = completion.choices[0].message.content;
+
+
+//     // לדוגמה, נניח שה-GPT מחזיר JSON בפורמט כזה
+//     // אבל לרוב הוא מחזיר טקסט חופשי אז תצטרך לפרסר או לבקש ממנו להחזיר JSON מדויק
+// let nutritionGoals;
+// try {
+  
+//   nutritionGoals = JSON.parse(responseText);
+// } catch (e) {
+//   // אם הפרסינג נכשל, אפשר לוג או להחזיר שגיאה
+//   return res.status(500).json({ error: 'שגיאה בפרסינג JSON מה-OpenAI' });
+// }
+
+
+
+
+//     // שמירה במסד הנתונים
+//     healthData.nutritionGoals = nutritionGoals;
+//     await healthData.save();
+// res.json({ nutritionGoals, healthData });
+//   //  }
+//     // מחזיר את המידע ללקוח
+//    // res.json({ nutritionGoals: responseText, healthData });
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
+
+
+
+
+
+
+
+function authenticate(req, res, next) {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'טוקן חסר' });
+  try {
+    req.user = jwt.verify(token, process.env.JWT_SECRET);
+    next();
+  } catch {
+    res.status(403).json({ error: 'טוקן שגוי' });
+  }
+}
+
+router.post('/healthData', authenticate, async (req, res) => {
+  try {
+    const { weight, height, age, gender, allergies } = req.body;
+
+    const existing = await HealthDataUser.findOne({ userId: req.user.userId });
+    
+    if (existing) {
+      // עדכון אם קיים
+      existing.weight = weight;
+      existing.height = height;
+      existing.age = age;
+      existing.gender = gender;
+      existing.allergies = allergies;
+      await existing.save();
+      return res.json({ message: 'עודכן בהצלחה' });
+    }
+console.log("userID" ,req.user.userId)
+console.log(req.body)
+    // חדש אם לא קיים
+    const healthData = new HealthDataUser({
+      userId: req.user.userId,
+      weight,
+      height,
+      age,
+      gender,
+      allergies
+    });
+
+    await healthData.save();
+    res.json({ message: 'נשמר בהצלחה' });
+
+  } catch (error) {
+    res.status(500).json({ error: 'שגיאה בשמירת נתוני הבריאות' });
+  }
+});
+
+// שליפה של נתוני הבריאות
+  var q= router.get('/healthDataGet', authenticate, async (req, res) => {
+  try {
+    const data = await HealthDataUser.findOne({ userId: req.user.userId });
+    if (!data) return res.status(404).json({ message: 'לא נמצאו נתונים' });
+    res.json(data);
+  } catch (error) {
+    res.status(500).json({ error: 'שגיאה בשליפת נתוני הבריאות' });
+  }
+});
+
+router.get('/all', authenticate, async (req, res) => {
+  try {
+    const messages = await ChatMessage.find({ userId: req.user.userId });
+    res.json(messages);
+  } catch {
+    res.status(500).json({ error: 'שגיאה בהבאת ההודעות' });
+  }
+});
+
+router.post('/', authenticate, async (req, res) => {
+  try {
+    const { message } = req.body;
+    const chatCompletion = await openai.chat.completions.create({
+      messages: [{ role: 'user', content: message }],
+      model: "gpt-3.5-turbo",
+    });
+
+    const botReply = chatCompletion.choices[0].message.content;
+
+    const newChat = new ChatMessage({
+      userId: req.user.userId,
+      userMessage: message,
+      botReply
+    });
+
+    await newChat.save();
+
+    res.json({ reply: botReply });
+  } catch (error) {
+    res.status(500).json({ error: 'שגיאה בשיחה עם הבוט' });
+  }
+});
+
+module.exports = router;

@@ -1,0 +1,18 @@
+
+<div class="chat-window">
+  <div *ngFor="let msg of messages" class="chat-message">
+    <div class="message user">
+      <strong>אתה:</strong>
+      <span>{{ msg.userMessage }}</span>
+    </div>
+    <div class="message bot">
+      <strong>בוט:</strong>
+      <span>{{ msg.botReply }}</span>
+    </div>
+  </div>
+
+  <div class="chat-input">
+    <input [(ngModel)]="newMessage" placeholder="כתוב הודעה..." />
+    <button (click)="sendMessage()">שלח</button>
+  </div>
+</div>

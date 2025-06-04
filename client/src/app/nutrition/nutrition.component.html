@@ -1,0 +1,73 @@
+<H1>ברוך/ה הבא/ה למערכת {{userName}} </H1>
+<div class="page-container" style="width: 100%; align-items: center;">
+    <div class="form-section" style="width: 50%;">
+        <h3>נתוני תזונה ובריאות</h3>
+        <form [formGroup]="healthForm" (ngSubmit)="saveHealthData()">
+            <label>משקל: <input formControlName="weight" type="number" /></label>
+            <label>גובה: <input formControlName="height" type="number" /></label>
+            <label>גיל: <input formControlName="age" type="number" /></label>
+            <label>מין:
+                <select formControlName="gender">
+                    <option value="">בחר</option>
+                    <option value="male">זכר</option>
+                    <option value="female">נקבה</option>
+                    <option value="other">אחר</option>
+                </select>
+            </label>
+            <label>אלרגיות (מופרדות בפסיקים): <input formControlName="allergies" /></label>
+            <button type="submit">שמור</button>
+        </form>
+    </div>
+
+    <div class="nutrition-section">
+        <h3>הצעות תזונה ראשוניות</h3>
+        <div class="dots-loader" *ngIf="isLoading">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <table *ngIf="!isLoading">
+            <thead>
+                <tr>
+                    <th>כותרת</th>
+                    <th>קלוריות יעד</th>
+                    <th>פחמימות</th>
+                    <th>חלבון</th>
+                    <th>שומן</th>
+                    <th>סטטוס</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let goal of initialGoals; let i = index">
+                    <td>{{goal.title}}</td>
+                    <td>{{goal.targetCalories}}</td>
+                    <td>{{goal.targetCarbs}}</td>
+                    <td>{{goal.targetProtein}}</td>
+                    <td>{{goal.targetFat}}</td>
+                    <td>
+
+                        <div class="status-buttons">
+                            <button *ngFor="let status of statuses" [class.active]="goal.status === status"
+                                [class]="status" (click)="changeGoalStatus(i, status)">
+                                {{ getStatusLabel(status) }}
+                            </button>
+                        </div>
+
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- כפתור פתיחה לצ'אט עם תמונת בוט -->
+<button class="chat-toggle" (click)="toggleChat()">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="bot icon" />
+    {{ showChat ? 'סגור' : 'פתח' }} התזונאי שלך
+</button>
+
+<!-- תיבת הצ'אט -->
+<div *ngIf="showChat" class="chat-box">
+    <!-- <dialog></dialog> -->
+    <app-chat></app-chat>
+</div>
