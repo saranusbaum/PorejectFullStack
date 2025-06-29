@@ -25,20 +25,43 @@ router.get('/initial', authenticate, async (req, res) => {
     }
 
     // המשך לקרוא ל-GPT אם אין מטרות שמורות
-    const prompt = `
-אתה תזונאי מומחה. אנא ספק 6 מטרות תזונתיות חייב שזה יהיה בנושא תזונה בריאה כושר וכד בשפה העברית מותאמות אישית עבור משתמש עם הנתונים הבאים:
-משקל: ${healthData.weight} ק"ג,
-גובה: ${healthData.height} ס"מ,
-גיל: ${healthData.age} שנים,
-מין: ${healthData.gender},
-אלרגיות: ${healthData.allergies.join(', ')}.
+//     const prompt = `
+// אתה תזונאי מומחה. אנא ספק 4 מטרות תזונתיות חייב שזה יהיה בנושא תזונה בריאה כושר וכד בשפה העברית מותאמות אישית עבור משתמש עם הנתונים הבאים:
+// משקל: ${healthData.weight} ק"ג,
+// גובה: ${healthData.height} ס"מ,
+// גיל: ${healthData.age} שנים,
+// מין: ${healthData.gender},
+// אלרגיות: ${healthData.allergies.join(', ')}.
 
-אנא הצג את המטרות בפורמט JSON בלבד, במערך של אובייקטים, כאשר כל אובייקט כולל את המאפיינים:
-"title", "description", "targetCalories", "targetCarbs", "targetProtein", "targetFat".
+// אנא הצג את המטרות בפורמט JSON בלבד, במערך של אובייקטים, כאשר כל אובייקט כולל את המאפיינים:
+// "title", "description", "targetCalories", "targetCarbs", "targetProtein", "targetFat".
+// `;
+
+
+const prompt = `
+אתה תזונאי מומחה ואיש כושר מוסמך. נא ליצור 4 מטרות מותאמות אישית עבור משתמש עם הנתונים הבאים:
+
+- משקל: ${healthData.weight} ק"ג
+- גובה: ${healthData.height} ס"מ
+- גיל: ${healthData.age} שנים
+- מין: ${healthData.gender}
+- אלרגיות: ${healthData.allergies.join(', ')}
+
+כל מטרה צריכה לכלול:
+1. כותרת המטרה ("title") – קצרה וברורה
+2. תיאור הפעולות שהמשתמש צריך לעשות ("description") – כגון פעילות גופנית מומלצת (הליכה, ריצה, אופני כושר, חדר כושר), והרגלים תזונתיים (כמו שתיית מים, ירקות מסוימים, הימנעות ממזון מסוים)
+3. יעד קלורי מומלץ ליום ("targetCalories")
+4. יעד יומי לפחמימות בגרם ("targetCarbs")
+5. יעד יומי לחלבון בגרם ("targetProtein")
+6. יעד יומי לשומן בגרם ("targetFat")
+
+ההצעות חייבות להיות מדויקות, מבוססות עקרונות תזונה וכושר, לא מומצאות, ולא לכלול מידע שאינו מתאים לנתוני המשתמש.
+
+החזר את התוצאה בפורמט JSON בלבד – מערך של אובייקטים עם המאפיינים שצוינו מעלה.
 `;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o" ,
       messages: [{ role: "user", content: prompt }],
     });
 

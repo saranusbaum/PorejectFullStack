@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AppModule } from '../app.module';
@@ -6,7 +7,7 @@ import { AppModule } from '../app.module';
 @Component({
   selector: 'app-nutrition',
   templateUrl: './nutrition.component.html',
-  styleUrls: ['./nutrition.component.css'] 
+  styleUrls: ['./nutrition.component.css']
 
 })
 export class NutritionComponent implements OnInit {
@@ -39,20 +40,20 @@ export class NutritionComponent implements OnInit {
     });
   }
 
-    
+   
 loadHealthDataAI()
 {
   debugger
   this.isLoading = true
      const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token')}`);
     this.http.get<any>('http://localhost:3000/api/chat/initial' ,  { headers }).subscribe(data => {
-      
+     
       this.initialGoals = data.nutritionGoals || [];
       this.initialHealthData = data.healthData || {};
       console.log("gggggggg",  this.initialGoals)
        this.isLoading = false
     });
-    
+   
 }
 
   ngOnInit() {
@@ -74,9 +75,16 @@ loadHealthDataAI()
     });
   }
 
-  toggleChat() {
-    this.showChat = !this.showChat;
+ toggleChat() {
+  this.showChat = !this.showChat;
+
+  if (this.showChat) {
+    document.body.classList.add('chat-open');
+  } else {
+    document.body.classList.remove('chat-open');
+
   }
+}
 
   loadHealthData() {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token')}`);
@@ -119,7 +127,7 @@ changeGoalStatus(index: number, newStatus: string) {
 
    this.initialGoals[index].status = newStatus;
     const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token')}`);
-  
+ 
    console.log("this.initialGoals" ,this.initialGoals)
     this.http.post('http://localhost:3000/api/chat/updateNutritionGoals',  this.initialGoals, { headers }).subscribe(res => {
       debugger

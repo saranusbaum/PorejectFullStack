@@ -1,5 +1,5 @@
-<H1>ברוך/ה הבא/ה למערכת {{userName}} </H1>
-<div class="page-container" style="width: 100%; align-items: center;">
+<div class="title">ברוך/ה הבא/ה {{userName}}</div>
+<div class="page-container" [class.only-form]="initialGoals.length === 0">
     <div class="form-section" style="width: 50%;">
         <h3>נתוני תזונה ובריאות</h3>
         <form [formGroup]="healthForm" (ngSubmit)="saveHealthData()">
@@ -19,7 +19,7 @@
         </form>
     </div>
 
-    <div class="nutrition-section">
+    <div class="nutrition-section" *ngIf="initialGoals.length > 0">
         <h3>הצעות תזונה ראשוניות</h3>
         <div class="dots-loader" *ngIf="isLoading">
             <span></span>
@@ -61,12 +61,16 @@
 </div>
 
 <!-- כפתור פתיחה לצ'אט עם תמונת בוט -->
-<button class="chat-toggle" (click)="toggleChat()">
+<!-- <button class="chat-toggle" (click)="toggleChat()">
     <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="bot icon" />
     {{ showChat ? 'סגור' : 'פתח' }} התזונאי שלך
+</button> -->
+<button class="chat-toggle" [class.open]="showChat" (click)="toggleChat()">
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712100.png" alt="bot icon" />
+    <span class="chat-text">התזונאי שלך</span>
+    <span *ngIf="showChat" class="close-text">× סגור</span>
 </button>
 
-<!-- תיבת הצ'אט -->
 <div *ngIf="showChat" class="chat-box">
     <!-- <dialog></dialog> -->
     <app-chat></app-chat>
