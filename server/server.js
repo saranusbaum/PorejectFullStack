@@ -18,8 +18,15 @@ app.use(express.json());
 app.use('/api/chat', chatRoutes);
 app.use('/api/auth', authRoutes);
 
-app.get('/', (req, res) => {
-  res.send('🍎 ברוכים הבאים לאתר תזונה בריאה!');
+// app.get('/', (req, res) => {
+//   res.send('🍎 ברוכים הבאים לאתר תזונה בריאה!');
+// });
+const path = require('path');
+
+app.use(express.static(path.join(__dirname, 'dist/client'))); // שימי לב לשם האמיתי של התיקייה שנוצרה
+
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist/client/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;

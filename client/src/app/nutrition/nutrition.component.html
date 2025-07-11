@@ -2,7 +2,7 @@
 <div class="page-container" [class.only-form]="initialGoals.length === 0">
     <div class="form-section" style="width: 50%;">
         <h3>נתוני תזונה ובריאות</h3>
-        <form [formGroup]="healthForm" (ngSubmit)="saveHealthData()">
+        <form [formGroup]="healthForm" >
             <label>משקל: <input formControlName="weight" type="number" /></label>
             <label>גובה: <input formControlName="height" type="number" /></label>
             <label>גיל: <input formControlName="age" type="number" /></label>
@@ -15,7 +15,7 @@
                 </select>
             </label>
             <label>אלרגיות (מופרדות בפסיקים): <input formControlName="allergies" /></label>
-            <button type="submit">שמור</button>
+           <button type="button" (click)="saveHealthData()">שמור</button>
         </form>
     </div>
 

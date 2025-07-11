@@ -8,6 +8,89 @@ const { debug } = require('openai/core.mjs');
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// router.get('/initial', authenticate, async (req, res) => {
+//   try {
+//     const healthData = await HealthDataUser.findOne({ userId: req.user.userId });
+
+//     if (!healthData) {
+//       return res.status(404).json({ message: 'לא נמצאו נתוני בריאות למשתמש זה' });
+//     }
+
+//     if (healthData.nutritionGoals && healthData.nutritionGoals.length > 0) {
+//     //  console.log("yessssssss")
+//       return res.json({ nutritionGoals: healthData.nutritionGoals, healthData });
+
+//     }
+
+
+
+
+// const prompt = `
+// אתה תזונאי מומחה ואיש כושר מוסמך. נא ליצור 4 מטרות מותאמות אישית עבור משתמש עם הנתונים הבאים:
+
+// - משקל: ${healthData.weight} ק"ג
+// - גובה: ${healthData.height} ס"מ
+// - גיל: ${healthData.age} שנים
+// - מין: ${healthData.gender}
+// - אלרגיות: ${healthData.allergies.join(', ')}
+
+// כל מטרה צריכה לכלול:
+// 1. כותרת המטרה ("title") – קצרה וברורה
+// 2. תיאור הפעולות שהמשתמש צריך לעשות ("description") – כגון פעילות גופנית מומלצת (הליכה, ריצה, אופני כושר, חדר כושר), והרגלים תזונתיים (כמו שתיית מים, ירקות מסוימים, הימנעות ממזון מסוים)
+// 3. יעד קלורי מומלץ ליום ("targetCalories")
+// 4. יעד יומי לפחמימות בגרם ("targetCarbs")
+// 5. יעד יומי לחלבון בגרם ("targetProtein")
+// 6. יעד יומי לשומן בגרם ("targetFat")
+
+//  ההצעות חייבות להיות מדויקות, מבוססות עקרונות תזונה וכושר, לא מומצאות, ולא לכלול מידע שאינו מתאים לנתוני המשתמש.ובשפה העברית בלבד
+
+ 
+//  אנא הצג את המטרות בפורמט JSON בלבד, במערך של אובייקטים, כאשר כל אובייקט כולל את המאפיינים:
+//  החזר אך ורק JSON תקין, ללא טקסט נוסף, ללא עטיפות של json או טקסט אחר. 
+
+//  "title", "description", "targetCalories", "targetCarbs", "targetProtein", "targetFat".
+// `;
+
+//     const completion = await openai.chat.completions.create({
+//       model: "gpt-3.5-turbo" ,
+//       messages: [{ role: "user", content: prompt }],
+//     });
+
+//     const responseText = completion.choices[0].message.content;
+
+//     console.log(responseText,"responseText")
+//      const cleanText = extractJsonFromText(responseText);
+//  console.log("cleanText" ,cleanText)
+//     let nutritionGoals;
+//     try {
+    
+
+//   nutritionGoals = JSON.parse(cleanText);
+   
+
+  
+//     } catch (e) {
+//       return res.status(500).json({ error: 'שגיאה בפרסינג JSON מה-OpenAI' });
+//     }
+
+//     // console.log("nutritionGoals" ,nutritionGoals)
+//    nutritionGoals = nutritionGoals.map(goal => ({
+//   ...goal,
+//   status: 'notStarted' }));
+
+//     console.log("nutritionGoals" ,nutritionGoals)
+//     healthData.nutritionGoals = nutritionGoals;
+       
+
+//     await healthData.save();
+
+//     res.json({ nutritionGoals, healthData });
+//   } catch (error) {
+//     res.status(500).json(error);
+//   }
+// });
+ 
+
 router.get('/initial', authenticate, async (req, res) => {
   try {
     const healthData = await HealthDataUser.findOne({ userId: req.user.userId });
@@ -15,30 +98,12 @@ router.get('/initial', authenticate, async (req, res) => {
     if (!healthData) {
       return res.status(404).json({ message: 'לא נמצאו נתוני בריאות למשתמש זה' });
     }
- //console.log("healthData" ,healthData)
-  //  console.log("healthData.initialNutritionGoals.length" ,healthData.nutritionGoals.length)
-    // ✅ אם כבר קיימות מטרות – מחזיר אותן בלי לשלוח שוב ל-GPT
-    if (healthData.nutritionGoals && healthData.nutritionGoals.length > 0) {
-    //  console.log("yessssssss")
-      return res.json({ nutritionGoals: healthData.nutritionGoals, healthData });
 
+    if (healthData.nutritionGoals && healthData.nutritionGoals.length > 0) {
+      return res.json({ nutritionGoals: healthData.nutritionGoals, healthData });
     }
 
-    // המשך לקרוא ל-GPT אם אין מטרות שמורות
-//     const prompt = `
-// אתה תזונאי מומחה. אנא ספק 4 מטרות תזונתיות חייב שזה יהיה בנושא תזונה בריאה כושר וכד בשפה העברית מותאמות אישית עבור משתמש עם הנתונים הבאים:
-// משקל: ${healthData.weight} ק"ג,
-// גובה: ${healthData.height} ס"מ,
-// גיל: ${healthData.age} שנים,
-// מין: ${healthData.gender},
-// אלרגיות: ${healthData.allergies.join(', ')}.
-
-// אנא הצג את המטרות בפורמט JSON בלבד, במערך של אובייקטים, כאשר כל אובייקט כולל את המאפיינים:
-// "title", "description", "targetCalories", "targetCarbs", "targetProtein", "targetFat".
-// `;
-
-
-const prompt = `
+    const prompt = `
 אתה תזונאי מומחה ואיש כושר מוסמך. נא ליצור 4 מטרות מותאמות אישית עבור משתמש עם הנתונים הבאים:
 
 - משקל: ${healthData.weight} ק"ג
@@ -55,43 +120,53 @@ const prompt = `
 5. יעד יומי לחלבון בגרם ("targetProtein")
 6. יעד יומי לשומן בגרם ("targetFat")
 
-ההצעות חייבות להיות מדויקות, מבוססות עקרונות תזונה וכושר, לא מומצאות, ולא לכלול מידע שאינו מתאים לנתוני המשתמש.
+ההצעות חייבות להיות מדויקות, מבוססות עקרונות תזונה וכושר, לא מומצאות, ולא לכלול מידע שאינו מתאים לנתוני המשתמש. בשפה העברית בלבד.
 
-החזר את התוצאה בפורמט JSON בלבד – מערך של אובייקטים עם המאפיינים שצוינו מעלה.
+אנא החזר אך ורק JSON תקין – מערך של אובייקטים. ללא טקסט הסבר, ללא עטיפות של json או סימונים כמו.
 `;
 
     const completion = await openai.chat.completions.create({
-      model: "gpt-4o" ,
-      messages: [{ role: "user", content: prompt }],
+      model: 'gpt-4o', // או gpt-3.5-turbo אם אין לך גישה
+      messages: [{ role: 'user', content: prompt }],
     });
 
     const responseText = completion.choices[0].message.content;
+    console.log("responseText:", responseText);
+
+    // ניקוי JSON מתוך תגובה
+    const extractJsonFromText = (text) => {
+      const match = text.match(/```json\s*([\s\S]*?)\s*```/);
+      if (match) {
+        return match[1];
+      }
+      return text;
+    };
+
+    const cleanText = extractJsonFromText(responseText);
+    console.log("cleanText:", cleanText);
 
     let nutritionGoals;
     try {
-    
-
-      nutritionGoals = JSON.parse(responseText);
-
-  
+      nutritionGoals = JSON.parse(cleanText);
     } catch (e) {
+      console.error("JSON parsing error:", e.message);
       return res.status(500).json({ error: 'שגיאה בפרסינג JSON מה-OpenAI' });
     }
 
-    // console.log("nutritionGoals" ,nutritionGoals)
-   nutritionGoals = nutritionGoals.map(goal => ({
-  ...goal,
-  status: 'notStarted' }));
+    // הוספת סטטוס לכל מטרה
+    nutritionGoals = nutritionGoals.map(goal => ({
+      ...goal,
+      status: 'notStarted'
+    }));
 
-    console.log("nutritionGoals" ,nutritionGoals)
     healthData.nutritionGoals = nutritionGoals;
-       
-
     await healthData.save();
 
     res.json({ nutritionGoals, healthData });
+
   } catch (error) {
-    res.status(500).json(error);
+    console.error("Server error:", error);
+    res.status(500).json({ error: 'שגיאה בשרת' });
   }
 });
 
