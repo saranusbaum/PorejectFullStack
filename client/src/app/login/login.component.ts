@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-login',
@@ -23,7 +24,7 @@ export class LoginComponent {
 
   login() {
     debugger
-    this.http.post<any>('http://localhost:3000/api/auth/login', this.loginForm.value)
+    this.http.post<any>(`${environment.baseUrl}/api/auth/login`, this.loginForm.value)
       .subscribe({
         next: (res) => {
           localStorage.setItem('token', res.token);
@@ -37,7 +38,7 @@ export class LoginComponent {
   const { email } = this.loginForm.value;
 
   // בדיקה האם המשתמש קיים
-  this.http.get<any>(`http://localhost:3000/api/auth/check-user?email=${email}`).subscribe({
+  this.http.get<any>(`${environment.baseUrl}/api/auth/check-user?email=${email}`).subscribe({
     next: (res) => {
       if (res.exists) {
         // משתמש קיים - מבצע התחברות
@@ -54,7 +55,7 @@ export class LoginComponent {
 
 
 registerAndLogin() {
-  this.http.post<any>('http://localhost:3000/api/auth/register', this.loginForm.value).subscribe({
+  this.http.post<any>(`${environment.baseUrl}/api/auth/register`, this.loginForm.value).subscribe({
     next: () => {
       this.login(); // אחרי הרשמה – מתחבר
     },

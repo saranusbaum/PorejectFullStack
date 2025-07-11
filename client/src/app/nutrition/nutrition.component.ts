@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, FormArray } from '@angular/forms';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AppModule } from '../app.module';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-nutrition',
@@ -46,7 +47,7 @@ loadHealthDataAI()
   debugger
   this.isLoading = true
      const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token')}`);
-    this.http.get<any>('http://localhost:3000/api/chat/initial' ,  { headers }).subscribe(data => {
+    this.http.get<any>(`${environment.baseUrl}/api/chat/initial` ,  { headers }).subscribe(data => {
      
       this.initialGoals = data.nutritionGoals || [];
       this.initialHealthData = data.healthData || {};
@@ -70,7 +71,7 @@ loadHealthDataAI()
   }
 
   save() {
-    this.http.post('http://localhost:3000/api/chat/save', this.nutritionForm.value).subscribe(() => {
+    this.http.post(`${environment.baseUrl}/api/chat/save`, this.nutritionForm.value).subscribe(() => {
       alert('נתוני התזונה נשמרו');
     });
   }
@@ -88,7 +89,7 @@ loadHealthDataAI()
 
   loadHealthData() {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token')}`);
-    this.http.get<any>('http://localhost:3000/api/chat/healthDataGet', { headers }).subscribe(data => {
+    this.http.get<any>(`${environment.baseUrl}/api/chat/healthDataGet`, { headers }).subscribe(data => {
       if(data)
       {
         this.loadHealthDataAI()
@@ -104,7 +105,7 @@ loadHealthDataAI()
      // allergies: this.healthForm.value.allergies?.split(',').map((a: string) => a.trim()) // אם זה שדה טקסט
     };
 
-    this.http.post('http://localhost:3000/api/chat/healthData', body, { headers }).subscribe(res => {
+    this.http.post(`${environment.baseUrl}/api/chat/healthData`, body, { headers }).subscribe(res => {
       alert('הנתונים נשמרו בהצלחה');
       this.isHealthFormSave = true;
       this.loadHealthDataAI()
@@ -129,7 +130,7 @@ changeGoalStatus(index: number, newStatus: string) {
     const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token')}`);
  
    console.log("this.initialGoals" ,this.initialGoals)
-    this.http.post('http://localhost:3000/api/chat/updateNutritionGoals',  this.initialGoals, { headers }).subscribe(res => {
+    this.http.post(`${environment.baseUrl}/api/chat/updateNutritionGoals`,  this.initialGoals, { headers }).subscribe(res => {
       debugger
       alert(res.toString());
      // this.isHealthFormSave = true;
