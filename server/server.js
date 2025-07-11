@@ -23,10 +23,11 @@ app.use('/api/auth', authRoutes);
 // });
 const path = require('path');
 
-app.use(express.static(path.join(__dirname, 'dist/client'))); // שימי לב לשם האמיתי של התיקייה שנוצרה
+app.use(express.static(path.join(__dirname, '../client/dist/client')));
 
+// להחזיר את index.html לכל נתיב (Routing של Angular)
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'dist/client/index.html'));
+  res.sendFile(path.join(__dirname, '../client/dist/client/index.html'));
 });
 
 const PORT = process.env.PORT || 3000;
