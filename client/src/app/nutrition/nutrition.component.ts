@@ -124,15 +124,15 @@ getStatusLabel(status: string): string {
 
 
 changeGoalStatus(index: number, newStatus: string) {
-    alert(newStatus)
+ 
 
    this.initialGoals[index].status = newStatus;
     const headers = new HttpHeaders().set('Authorization', `Bearer ${localStorage.getItem('token')}`);
  
    console.log("this.initialGoals" ,this.initialGoals)
     this.http.post(`${environment.baseUrl}/api/chat/updateNutritionGoals`,  this.initialGoals, { headers }).subscribe(res => {
-      debugger
-      alert(res.toString());
+      
+     
      // this.isHealthFormSave = true;
      
     });
